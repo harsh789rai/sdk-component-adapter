@@ -3,6 +3,7 @@ import {isObservable} from 'rxjs';
 import RoomsSDKAdapter from './RoomsSDKAdapter';
 import mockActivities from './mockActivities';
 import createMockSDK, {mockSDKActivity, mockSDKRoom} from './mockSdk';
+import {fromSDKActivity} from './ActivitiesSDKAdapter';
 
 describe('Rooms SDK Adapter', () => {
   let mockSDK;
@@ -12,15 +13,18 @@ describe('Rooms SDK Adapter', () => {
   beforeEach(() => {
     mockSDK = createMockSDK();
     mockSDK.internal.conversation.list = jest.fn(() => Promise.resolve([]));
+    mockSDK.internal.mercury.on = jest.fn((event, callback) => callback({
+      data: {activity: mockSDKActivity},
+    }));
     roomsSDKAdapter = new RoomsSDKAdapter(mockSDK);
   });
 
   describe('getRoom() functionality', () => {
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(roomsSDKAdapter.getRoom())).toBeTruthy();
     });
 
-    test('returns a room in a proper shape', (done) => {
+    it('returns a room in a proper shape', (done) => {
       roomsSDKAdapter.getRoom('id').subscribe((room) => {
         expect(room).toEqual(
           expect.objectContaining({
@@ -33,21 +37,21 @@ describe('Rooms SDK Adapter', () => {
       });
     });
 
-    test('listens to room events when subscribing', (done) => {
+    it('listens to room events when subscribing', (done) => {
       roomsSDKAdapter.getRoom('id').subscribe(() => {
         expect(mockSDK.rooms.listen).toHaveBeenCalled();
         done();
       });
     });
 
-    test('stops listening to events when unsubscribing', () => {
+    it('stops listening to events when unsubscribing', () => {
       const subscription = roomsSDKAdapter.getRoom('id').subscribe();
 
       subscription.unsubscribe();
       expect(mockSDK.rooms.stopListening).toHaveBeenCalled();
     });
 
-    test('throws a proper error message', (done) => {
+    it('throws a proper error message', (done) => {
       const errorMessage = 'a proper error message';
 
       mockSDK.rooms.get = jest.fn(() => Promise.reject(new Error(errorMessage)));
@@ -63,23 +67,13 @@ describe('Rooms SDK Adapter', () => {
   });
 
   describe('getActivitiesInRealTime()', () => {
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(roomsSDKAdapter.getActivitiesInRealTime())).toBeTruthy();
     });
 
-    test('returns a activity in a proper shape', (done) => {
-      mockSDK.internal.mercury.on = jest.fn((event, callback) => callback(mockSDKActivity));
-
+    it('returns a activity in a proper shape', (done) => {
       roomsSDKAdapter.getActivitiesInRealTime(mockSDKActivity.target.id).subscribe((activity) => {
-        expect(activity).toEqual({
-          ID: mockSDKActivity.id,
-          roomID: mockSDKActivity.target.id,
-          content: mockSDKActivity.object,
-          contentType: mockSDKActivity.object.objectType,
-          personID: mockSDKActivity.actor.id,
-          displayAuthor: false,
-          created: mockSDKActivity.published,
-        });
+        expect(activity).toEqual(fromSDKActivity(mockSDKActivity).ID);
         done();
       });
     });
@@ -95,12 +89,12 @@ describe('Rooms SDK Adapter', () => {
         .mockReturnValueOnce(null);
     });
 
-    test('returns an observable', () => {
+    it('returns an observable', () => {
       expect(isObservable(roomsSDKAdapter.getPastActivities(roomId)))
         .toBeTruthy();
     });
 
-    test('completes when all activities have been emitted', (done) => {
+    it('completes when all activities have been emitted', (done) => {
       let itemsCount = 0;
 
       mockSDK.internal.conversation.listActivities = getPreviousMock;
@@ -121,7 +115,7 @@ describe('Rooms SDK Adapter', () => {
       roomsSDKAdapter.hasMoreActivities(roomId); // no more
     });
 
-    test('throws error if no room id is present', (done) => {
+    it('throws error if no room id is present', (done) => {
       roomsSDKAdapter.getPastActivities().subscribe({
         next() {},
         error(e) {
@@ -131,7 +125,7 @@ describe('Rooms SDK Adapter', () => {
       });
     });
 
-    test('sets empty roomActivities if no room exists', () => {
+    it('sets empty roomActivities if no room exists', () => {
       expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(false);
       roomsSDKAdapter.getPastActivities('room-1');
       expect(roomsSDKAdapter.roomActivities.has('room-1')).toBe(true);

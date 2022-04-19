@@ -1,3 +1,80 @@
+## [1.108.1](https://github.com/webex/sdk-component-adapter/compare/v1.108.0...v1.108.1) (2022-03-31)
+
+
+### Bug Fixes
+
+* **MeetingsSdkAdapter:** avoid disabling audio control if on iOS 15.1 ([bc2b1cb](https://github.com/webex/sdk-component-adapter/commit/bc2b1cbe821a14afe58c2519b4c81b7c09c1f223))
+
+# [1.108.0](https://github.com/webex/sdk-component-adapter/compare/v1.107.2...v1.108.0) (2022-03-30)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** encrypt cards before posting an activity ([df1f340](https://github.com/webex/sdk-component-adapter/commit/df1f340b11924e45e7db73b1bedf7628625a9375))
+
+## [1.107.2](https://github.com/webex/sdk-component-adapter/compare/v1.107.1...v1.107.2) (2022-03-30)
+
+
+### Bug Fixes
+
+* **WebexSdkAdapter:** correct some log messages in connect and disconnect methods ([38682b4](https://github.com/webex/sdk-component-adapter/commit/38682b4a38c4b47bf908d9627faa6f14f340f8b3))
+
+## [1.107.1](https://github.com/webex/sdk-component-adapter/compare/v1.107.0...v1.107.1) (2022-03-30)
+
+
+### Bug Fixes
+
+* **polyfills:** add getTracks() polyfill only if MediaStream exists ([a67eb8e](https://github.com/webex/sdk-component-adapter/commit/a67eb8e30b2c4d3978b0c97d58d8b708c6eeeb3c))
+
+# [1.107.0](https://github.com/webex/sdk-component-adapter/compare/v1.106.0...v1.107.0) (2022-03-28)
+
+
+### Features
+
+* **ActivitiesSdkAdapter:** add 'cards' property to activity and move card from attachments ([c42b637](https://github.com/webex/sdk-component-adapter/commit/c42b6376b26bb54de3963814904f932f75e34733))
+
+# [1.106.0](https://github.com/webex/sdk-component-adapter/compare/v1.105.1...v1.106.0) (2022-03-23)
+
+
+### Features
+
+* **ShareControl:** disable share screen on mobile browsers and Internet Explorer browser ([454db60](https://github.com/webex/sdk-component-adapter/commit/454db60a183663a4aeae07763153596a015f52b1))
+
+## [1.105.1](https://github.com/webex/sdk-component-adapter/compare/v1.105.0...v1.105.1) (2022-03-18)
+
+
+### Bug Fixes
+
+* **ActivitiesAdapter:** fix personID from sdk activity ([171cf4f](https://github.com/webex/sdk-component-adapter/commit/171cf4f192d92a5f488fad704eb8b4978df87396))
+
+# [1.105.0](https://github.com/webex/sdk-component-adapter/compare/v1.104.5...v1.105.0) (2022-03-17)
+
+
+### Features
+
+* **cache:** add cache module ([064afaf](https://github.com/webex/sdk-component-adapter/commit/064afaffa080145986d103edc9a36a6c1997630c))
+
+## [1.104.5](https://github.com/webex/sdk-component-adapter/compare/v1.104.4...v1.104.5) (2022-03-16)
+
+
+### Bug Fixes
+
+* **RoomsAdapter:** fix return value of fetchPastActivities ([b631b58](https://github.com/webex/sdk-component-adapter/commit/b631b58c8bdfe4df2da7798967997c31b705ba2f))
+
+## [1.104.4](https://github.com/webex/sdk-component-adapter/compare/v1.104.3...v1.104.4) (2022-03-16)
+
+
+### Bug Fixes
+
+* **RoomsAdapter:** fix return of getActivitiesInRealTime ([fb7ba4a](https://github.com/webex/sdk-component-adapter/commit/fb7ba4a78b3a1ae33253d4de41c6afc54cf56195))
+
+## [1.104.3](https://github.com/webex/sdk-component-adapter/compare/v1.104.2...v1.104.3) (2022-03-16)
+
+
+### Bug Fixes
+
+* **ActivitiesSdkAdapter:** update postAction to use conversation API ([75498ed](https://github.com/webex/sdk-component-adapter/commit/75498ed9cf4de14ff88f296ebd94e1277fa72977))
+
 ## [1.104.2](https://github.com/webex/sdk-component-adapter/compare/v1.104.1...v1.104.2) (2022-03-14)
 
 

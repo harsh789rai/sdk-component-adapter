@@ -3,9 +3,9 @@ import {
   concat,
   from,
   fromEvent,
-  BehaviorSubject,
   Observable,
   throwError,
+  ReplaySubject,
 } from 'rxjs';
 import {
   filter,
@@ -17,7 +17,9 @@ import {
 } from 'rxjs/operators';
 import {RoomsAdapter} from '@webex/component-adapter-interfaces';
 import {deconstructHydraId} from '@webex/common';
+import {fromSDKActivity} from './ActivitiesSDKAdapter';
 import logger from './logger';
+import cache from './cache';
 
 // TODO: Figure out how to import JS Doc definitions and remove duplication.
 /**
@@ -169,14 +171,13 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     const {activityLimit} = this;
     const conversationId = deconstructHydraId(ID).id;
 
-    logger.debug('ROOM', ID, 'fetchActivities()', ['called with', {
-      earliestActivityDate,
-      activityLimit,
-    }]);
+    logger.debug('ROOM', ID, 'fetchActivities()', ['called with', earliestActivityDate, activityLimit]);
 
     if (!FETCHED_CONVERSATIONS) {
-      await this.datasource.internal.conversation.list();
+      const convos = await this.datasource.internal.conversation.list();
+
       FETCHED_CONVERSATIONS = true;
+      cache.cacheConversations(convos);
     }
 
     return this.datasource.internal.conversation.listActivities({
@@ -212,6 +213,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
   /**
    * Fetches past activities and returns array of (id, published) objects. Performs side effects
    *
+   * @private
    * @param {string} ID The id of the room
    * @returns null
    */
@@ -220,9 +222,7 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
     const {earliestActivityDate} = roomActivity;
     const room$ = this.activitiesObservableCache.get(ID);
 
-    logger.debug('ROOM', ID, 'fetchPastActivities()', ['called with', {
-      earliestActivityDate,
-    }]);
+    logger.debug('ROOM', ID, 'fetchPastActivities()', ['called with', earliestActivityDate]);
 
     if (!ID) {
       logger.error('ROOM', ID, 'fetchPastActivities()', ['Must provide room ID']);
@@ -234,14 +234,15 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
         if (!data) {
           return room$.complete();
         }
+        cache.cachActivities(data);
         roomActivity.hasMore = data.length >= this.activityLimit + 1;
         const {published} = data.shift();
-        const activityIds = sortByPublished(data).map((activity) => {
-          const {id} = activity;
+        const activityIds = sortByPublished(data).map((sdkActivity) => {
+          const activity = fromSDKActivity(sdkActivity);
 
-          roomActivity.activities.set(id, activity);
+          roomActivity.activities.set(activity.ID, activity);
 
-          return [id, activity.published];
+          return activity.ID;
         });
 
         roomActivity.earliestActivityDate = published;
@@ -294,26 +295,24 @@ export default class RoomsSDKAdapter extends RoomsAdapter {
    */
   getActivitiesInRealTime(ID) {
     logger.debug('ROOM', ID, 'getActivitiesInRealTime()', ['called with', {ID}]);
-    if (!(ID in this.getActivitiesInRealTimeCache)) {
-      const getActivitiesInRealTime$ = new BehaviorSubject({});
 
-      this.datasource.internal.mercury.on('event:conversation.activity', (sdkActivity) => {
+    if (!ID) {
+      logger.error('ROOM', ID, 'getPastActivities()', ['Must provide room ID']);
+
+      return throwError(new Error('getPastActivities - Must provide room ID'));
+    }
+
+    if (!(ID in this.getActivitiesInRealTimeCache)) {
+      const getActivitiesInRealTime$ = new ReplaySubject();
+
+      this.datasource.internal.mercury.on('event:conversation.activity', ({data}) => {
+        const {activity} = data;
         const {id: UUID} = deconstructHydraId(ID);
 
-        if (sdkActivity.target && sdkActivity.target.id === UUID) {
-          logger.debug('ROOM', ID, 'getActivitiesInRealTime()', ['received "event:conversation.activity" event', {sdkActivity}]);
+        if (activity.target && activity.target.id === UUID) {
+          logger.debug('ROOM', ID, 'getActivitiesInRealTime()', ['received "event:conversation.activity" event', {activity}]);
 
-          const activity = {
-            ID: sdkActivity.id,
-            roomID: sdkActivity.target.id,
-            content: sdkActivity.object,
-            contentType: sdkActivity.object.objectType,
-            personID: sdkActivity.actor.id,
-            displayAuthor: false,
-            created: sdkActivity.published,
-          };
-
-          getActivitiesInRealTime$.next(activity);
+          getActivitiesInRealTime$.next(fromSDKActivity(activity).ID);
 
           logger.info('ROOM', ID, 'getActivitiesInRealTime()', ['emitting activity object', {activity}]);
         }

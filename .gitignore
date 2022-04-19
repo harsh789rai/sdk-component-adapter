@@ -23,6 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 .node_repl_history
 reports/
+.nyc_output/
 
 #IDEs
 .project
@@ -39,9 +40,8 @@ reports/
 ._*
 
 #Local stuff
-*.json
 .env*
-!.env.default
-!package.json
-!package-lock.json
 node_modules/
+
+# Cypress
+cypress/screenshots/

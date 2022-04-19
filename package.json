@@ -1,19 +1,21 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "1.104.2",
-  "main": "dist/webexSDKComponentAdapter.esm.js",
+  "version": "1.108.1",
+  "main": "dist/webexSDKComponentAdapter.umd.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
     "build": "rollup -c",
-    "linter": "eslint src/",
+    "linter": "eslint . --ignore-path .gitignore",
     "release": "semantic-release",
     "release:debug": "semantic-release --debug",
     "release:dry-run": "semantic-release --dry-run",
     "start": "nodemon -r dotenv/config scripts/start.js",
     "serve": "parcel scripts/index.html",
-    "test": "jest",
-    "test:integration": "jest \"^(?=.*integration.test.js).*\"",
-    "test:unit": "jest \"^(?=.*.test.js)(?!.*integration).*\"",
+    "jest": "jest",
+    "cypress": "cypress open",
+    "test:integration": "cypress run --browser chrome",
+    "test:integration:ci": "npm run test:integration -- --reporter junit --reporter-options \"mochaFile=test_results/cypress/results-[hash].xml,toConsole=true\"",
+    "test:unit": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
@@ -29,12 +31,12 @@
   "license": "MIT",
   "peerDependencies": {
     "rxjs": "^6.5.4",
-    "webex": "^1.149.2"
+    "webex": "^1.157.0"
   },
   "dependencies": {
     "@babel/plugin-transform-runtime": "^7.16.0",
-    "@webex/common": "^1.149.2",
-    "@webex/component-adapter-interfaces": "^1.23.0",
+    "@webex/common": "^1.157.0",
+    "@webex/component-adapter-interfaces": "^1.26.0",
     "logform": "^2.2.0"
   },
   "devDependencies": {
@@ -43,31 +45,35 @@
     "@babel/preset-env": "^7.12.1",
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
+    "@cypress/code-coverage": "^3.9.12",
+    "@cypress/webpack-preprocessor": "^5.11.1",
     "@rollup/plugin-babel": "^5.3.0",
     "@rollup/plugin-commonjs": "^21.0.1",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.6",
     "@semantic-release/changelog": "^6.0.0",
     "@semantic-release/git": "^10.0.0",
-    "@webex/test-users": "^1.149.2",
+    "@webex/test-users": "^1.157.0",
+    "babel-loader": "^8.2.4",
+    "babel-plugin-istanbul": "^6.1.1",
+    "cypress": "^9.5.3",
     "dotenv": "^8.2.0",
     "eslint": "^7.2.0",
     "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-cypress": "^2.12.1",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-jsdoc": "^30.7.8",
     "husky": "^4.3.0",
     "jest": "^24.9.0",
     "jest-junit": "^8.0.0",
-    "jest-puppeteer": "^4.3.0",
     "nodemon": "^2.0.6",
-    "parcel": "^2.0.0",
     "parcel-bundler": "^1.12.5",
-    "puppeteer": "^2.0.0",
     "rollup": "^2.59.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
-    "semantic-release": "^18.0.0"
+    "semantic-release": "^18.0.0",
+    "webpack": "~4"
   },
   "browserslist": [
     "last 2 versions and not dead and > 2%"
@@ -81,10 +87,16 @@
     ]
   },
   "jest": {
+    "testMatch": [
+      "**/!(*.integration).test.js"
+    ],
+    "setupFiles": [
+      "dotenv/config"
+    ],
     "setupFilesAfterEnv": [
       "<rootDir>/jest.setup.js"
     ],
-    "preset": "jest-puppeteer",
+    "testEnvironment": "jsdom",
     "reporters": [
       "default",
       "jest-junit"
@@ -122,7 +134,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run linter",
-      "pre-push": "npm run build && npm run test:unit",
+      "pre-push": "npm run build && npm run test:unit -- --silent",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   },
