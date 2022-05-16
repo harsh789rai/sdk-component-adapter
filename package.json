@@ -1,6 +1,6 @@
 {
   "name": "@webex/sdk-component-adapter",
-  "version": "1.108.1",
+  "version": "1.109.0",
   "main": "dist/webexSDKComponentAdapter.umd.js",
   "module": "dist/webexSDKComponentAdapter.esm.js",
   "scripts": {
@@ -36,7 +36,7 @@
   "dependencies": {
     "@babel/plugin-transform-runtime": "^7.16.0",
     "@webex/common": "^1.157.0",
-    "@webex/component-adapter-interfaces": "^1.26.0",
+    "@webex/component-adapter-interfaces": "^1.28.0",
     "logform": "^2.2.0"
   },
   "devDependencies": {
